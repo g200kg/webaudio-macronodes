@@ -1,0 +1,53 @@
+<!doctype html>
+<html>
+<body>
+<script src="webaudio-macronodes.js"></script>
+<script>
+// Sample App
+window.onload=function(){
+  actx=new AudioContext();
+  let isplaying=false;
+  src = new MediaElementAudioSourceNode(actx, {mediaElement:document.getElementById("audio")});
+  vol = new GainNode(actx, {gain:0.3});
+
+  delay = new Macro_PingPongDelayNode(actx);
+
+  src.connect(delay).connect(vol).connect(actx.destination);
+  document.getElementById("play").addEventListener("click", ()=>{
+    actx.resume();
+    isplaying=!isplaying;
+    if(isplaying)
+      document.getElementById("audio").play();
+    else
+      document.getElementById("audio").pause();
+  });
+
+  document.getElementById("delayTime").addEventListener("input", Setup);
+  document.getElementById("feedback").addEventListener("input", Setup);
+  document.getElementById("mix").addEventListener("input", Setup);
+  document.getElementById("effect").addEventListener("change",(ev)=>{delay.effect = ev.target.checked});
+
+  Setup();
+
+  function Setup(){
+    delay.delayTime.value = document.getElementById("delayTimeVal").innerHTML = document.getElementById("delayTime").value;
+    delay.feedback.value = document.getElementById("feedbackVal").innerHTML = document.getElementById("feedback").value;
+    delay.mix.value = document.getElementById("mixVal").innerHTML = document.getElementById("mix").value;
+  }
+};
+
+</script>
+<h1>[Web Audio API] Macro_Nodes</h1>
+<h2>Macro_PingPongDelayNode</h2>
+<audio id="audio" src="./loop.wav" loop="1"></audio>
+<button id="play">PLAY/PAUSE</button><br/><br/>
+
+<table>
+<tr><th>delayTime</th><td><input id="delayTime" type="range" min="0" max="1" value="0.5" step="0.01"/></td><td id="delayTimeVal"></td></tr>
+<tr><th>feedback</th><td><input id="feedback" type="range" min="0" max="1" value="0.5" step="0.01"/></td><td id="feedbackVal"></td></tr>
+<tr><th>mix</th><td><input id="mix" type="range" min="0" max="1" value="0.5" step="0.01"/></td><td id="mixVal"></td></tr>
+<tr><th>effect</th><td><input id="effect" type="checkbox" checked/></td></tr>
+</table>
+<br/>
+</body>
+</html>

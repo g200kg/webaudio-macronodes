@@ -1,0 +1,90 @@
+<!doctype html>
+<html>
+<body>
+<script src="webaudio-macronodes.js"></script>
+<script>
+// Sample App
+window.onload=function(){
+  actx=new AudioContext();
+  let isplaying=false;
+  src = new MediaElementAudioSourceNode(actx, {mediaElement:document.getElementById("audio")});
+  vol = new GainNode(actx, {gain:0.3});
+
+  graphicEq = new Macro_GraphicEqNode(actx, {eq:[0,0,0,20,0,0,0]});
+
+  src.connect(graphicEq).connect(vol).connect(actx.destination);
+  document.getElementById("play").addEventListener("click", ()=>{
+    actx.resume();
+    isplaying=!isplaying;
+    if(isplaying)
+      document.getElementById("audio").play();
+    else
+      document.getElementById("audio").pause();
+  });
+
+  for(let i=0;i<7;++i)
+    document.getElementById(i).addEventListener("input",Setup);
+  document.getElementById("effect").addEventListener("change",(ev)=>{graphicEq.effect = ev.target.checked});
+
+  const freqtab = new Float32Array(256), magtab = new Float32Array(256), phasetab = new Float32Array(256); 
+  const ctx = document.getElementById("canvas").getContext("2d");
+  for(let i=0;i<256;++i)
+      freqtab[i] = 20 * Math.pow(1000,i/256);
+  Setup();
+
+  function Draw(){
+    graphicEq.getFrequencyResponse(freqtab,magtab,phasetab);
+    for(let i=0;i<256;++i){
+      const db = Math.log10(magtab[i])*20;
+      ctx.fillStyle="#000";
+      ctx.fillRect(i*2,0,2,300);
+      ctx.fillStyle="#0a3";
+      ctx.fillRect(i*2,300,2,-150-db*4);
+    }
+    ctx.fillStyle="#cb8";
+    for(let i=10,d=10;i;i+=d){
+      if(i>=100)  d=100;
+      if(i>=1000) d=1000;
+      if(i>=10000)
+        break;
+      const x = Math.log10(i/20)/3*256;
+      ctx.fillRect(x*2|0,0,1,300);
+    }
+    ctx.fillText("100",123,296);
+    ctx.fillText("1k",292,296);
+    ctx.fillText("10k",456,296);
+    for(let i=-160;i<=160;i+=40){
+      ctx.fillRect(0,150-i,512,1);
+      ctx.fillText((i/4)+"dB",0,150-i);
+    }
+  }
+  function Setup(){
+    for(let i=0;i<7;++i){
+      const v=document.getElementById(i).value;
+      graphicEq.eq[i].value = v;
+      document.getElementById(i+"Val").innerHTML = v;
+    }
+    Draw();
+  }
+};
+
+</script>
+<h1>[Web Audio API] Macro_Nodes</h1>
+<h2>Macro_GraphicEqNode</h2>
+<audio id="audio" src="./loop.wav" loop="1"></audio>
+<button id="play">PLAY/PAUSE</button><br/><br/>
+
+<table>
+<tr><th>eq[0] 100Hz</th><td><input id="0" type="range" min="-20" max="20" value="0" step="0.01"/></td><td id="0Val"></td></tr>
+<tr><th>eq[1] 200Hz</th><td><input id="1" type="range" min="-20" max="20" value="0" step="0.01"/></td><td id="1Val"></td></tr>
+<tr><th>eq[2] 400Hz</th><td><input id="2" type="range" min="-20" max="20" value="0" step="0.01"/></td><td id="2Val"></td></tr>
+<tr><th>eq[3] 800Hz</th><td><input id="3" type="range" min="-20" max="20" value="0" step="0.01"/></td><td id="3Val"></td></tr>
+<tr><th>eq[4] 1.6kHz</th><td><input id="4" type="range" min="-20" max="20" value="0" step="0.01"/></td><td id="4Val"></td></tr>
+<tr><th>eq[5] 3.2kHz</th><td><input id="5" type="range" min="-20" max="20" value="0" step="0.01"/></td><td id="5Val"></td></tr>
+<tr><th>eq[6] 6.4kHz</th><td><input id="6" type="range" min="-20" max="20" value="0" step="0.01"/></td><td id="6Val"></td></tr>
+<tr><th>effect enable</th><td><input id="effect" type="checkbox" checked/></td></tr>
+</table>
+<br/>
+<canvas id="canvas" width="512" height="300"></canvas>
+</body>
+</html>

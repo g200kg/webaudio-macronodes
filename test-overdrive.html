@@ -1,0 +1,50 @@
+<!doctype html>
+<html>
+<body>
+<script src="webaudio-macronodes.js"></script>
+<script>
+// Sample App
+window.onload=function(){
+  actx = new AudioContext();
+  let isplaying = false;
+  src = new MediaElementAudioSourceNode(actx, {mediaElement:document.getElementById("audio")});
+  vol = new GainNode(actx, {gain:0.3});
+
+  overdrive = new Macro_OverDriveNode(actx);
+
+  src.connect(overdrive).connect(vol).connect(actx.destination);
+  document.getElementById("play").addEventListener("click", ()=>{
+    actx.resume();
+    isplaying=!isplaying;
+    if(isplaying)
+      document.getElementById("audio").play();
+    else
+      document.getElementById("audio").pause();
+  });
+
+  document.getElementById("drive").addEventListener("input", Setup);
+  document.getElementById("level").addEventListener("input", Setup);
+  document.getElementById("effect").addEventListener("change",(ev)=>{overdrive.effect = ev.target.checked});
+
+  Setup();
+
+  function Setup(){
+    overdrive.drive.value = document.getElementById("driveVal").innerHTML = document.getElementById("drive").value;
+    overdrive.level.value = document.getElementById("levelVal").innerHTML = document.getElementById("level").value;
+  }
+};
+
+</script>
+<h1>[Web Audio API] Macro_Nodes</h1>
+<h2>Macro_OverDriveNode</h2>
+<audio id="audio" src="./solo1.wav" loop="1"></audio>
+<button id="play">PLAY/PAUSE</button><br/><br/>
+
+<table>
+<tr><th>drive</th><td><input id="drive" type="range" min="0" max="1" value="0.5" step="0.01"/></td><td id="driveVal"></td></tr>
+<tr><th>level</th><td><input id="level" type="range" min="0" max="2" value="1" step="0.01"/></td><td id="levelVal"></td></tr>
+<tr><th>effect</th><td><input id="effect" type="checkbox" checked/></td></tr>
+</table>
+<br/>
+</body>
+</html>
