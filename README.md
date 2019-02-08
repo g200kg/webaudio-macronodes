@@ -22,6 +22,14 @@ For example, you can set arbitrary initial value by creating Macro_ToneControlNo
 
 * After node creation, you can use the node by connecting with the connect() method like ordinary nodes. AudioParam parameters can be controlled automation by automation functions such as setValueAtTime(), also signals from other nodes can be connected.
 
+Example:
+```js
+...
+const tonecontrol = new Macro_ToneControlNode(audioctx, {bass:0, mid:0, treble:3});
+sourceNode.connect(tonecontrol).connect(audioctx.destination);
+...
+```
+
 ---
 
 ## Macro_ToneControlNode
